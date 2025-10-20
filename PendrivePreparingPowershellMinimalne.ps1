@@ -1,56 +1,66 @@
 # przygotowanie środowiska
 	
-	# pobranie na dysk C:\ folder PreparingPendrive z GitHub
+	# pobranie bezpośrednio na dysk C:\ folder PreparingPendrive z GitHub (wejście w C:\ w file explorer > PPM > Terminal > git clone https://github.com/FilipCetnarowicz/PreparingPendrive)
 
-	# sprawdzenie, czy nic nie jest aktualnie zamontowane
+	# sprawdzenie, czy żaden obraz nie jest aktualnie zamontowany (lub zamontowany z błędem)
 	Invoke-Expression 'DISM /Get-MountedWimInfo'
+	
+	# usunięcie w razie potrzeby
 	# Invoke-Expression 'DISM /Cleanup-Wim'
 	# Dismount-WindowsImage -Path XXXXXX -Discard -ErrorAction stop
 
-	# pobranie najnowszego .iso ze strony Microsoftu (https://www.microsoft.com/pl-pl/software-download/windows11)
-
-	# zamontowanie obrazu .iso i ręczne skopiowanie plików do C:\PreparingPendrive\oldMedia	
-	
-	# teraz można sprawdzić wersje aktualnie zainstalowanych paczek z install.esd i boot.wim
-	Invoke-Expression 'DISM /Get-WimInfo /WimFile:C:\PreparingPendrive\oldMedia\sources\install.esd'
-	Invoke-Expression 'DISM /Get-WimInfo /WimFile:C:\PreparingPendrive\oldMedia\sources\boot.wim'
-	# WinRE widoczne będzie dopiero po zamontowaniu obrazu install
-
-	# wyszukanie i pobranie najnowszych paczek do zaktualizowania obrazu z catalog update microsoftu (https://catalog.update.microsoft.com/Home.aspx)
-
-	# wrzucenie pobranych paczek do folderu C:\PreparingPendrive\packages i odpowiednich podfolderów 
-	# sprawdzenie przed pobraniem, czy dana paczka ma jakieś paczki zależne (wtedy konieczna modyfikacja skryptu)
-	# zmiana nazwy pobranych paczek, aby się zgadzały z poniższą ścieżką
-
-	# zdefiniowanie ścieżek do paczek jako zmienne
-	$LCU_PATH        = "C:\PreparingPendrive\packages\CU\LCU_KB5065426.msu" 		# od install.wim (Windows) - paczka Cumulative Update 
-	$SETUP_DU_PATH   = "C:\PreparingPendrive\packages\Other\Setup_KB5066683.cab" 		# od boot.wim (WinPE) - paczka Setup
-	$SAFE_OS_DU_PATH = "C:\PreparingPendrive\packages\Other\SafeOS_KB5066687.cab" 		# od winre.wim (WinRE) - paczka SafeOS
-	$DOTNET_CU_PATH  = "C:\PreparingPendrive\packages\Other\DotNet_KB5066613.msu" 		# od .NET - paczka .Net
-
-	Test-Path -Path $LCU_PATH
-	Test-Path -Path $SETUP_DU_PATH
-	Test-Path -Path $SAFE_OS_DU_PATH
-	Test-Path -Path $DOTNET_CU_PATH
+	# stworzenie potrzebnych ścieżek (jeśli są już utworzone z jakąś zawartością to nie zostaną zmodyfikowane)
+		mkdir "C:\PreparingPendrive\oldMedia"
+		mkdir "C:\PreparingPendrive\newMedia"
+		mkdir "C:\PreparingPendrive\temp"
+		mkdir "C:\PreparingPendrive\temp\MainOSMount"
+		mkdir "C:\PreparingPendrive\temp\WinREMount"
+		mkdir "C:\PreparingPendrive\temp\WinPEMount"
 
 	# zdefiniowanie ścieżek do folderów jako zmienne
-	$MEDIA_OLD_PATH  = "C:\PreparingPendrive\oldMedia"
-	$MEDIA_NEW_PATH  = "C:\PreparingPendrive\newMedia"
-	$WORKING_PATH    = "C:\PreparingPendrive\temp"
-	$MAIN_OS_MOUNT   = "C:\PreparingPendrive\temp\MainOSMount"
-	$WINRE_MOUNT     = "C:\PreparingPendrive\temp\WinREMount"
-	$WINPE_MOUNT     = "C:\PreparingPendrive\temp\WinPEMount"
+		$MEDIA_OLD_PATH  = "C:\PreparingPendrive\oldMedia"
+		$MEDIA_NEW_PATH  = "C:\PreparingPendrive\newMedia"
+		$WORKING_PATH    = "C:\PreparingPendrive\temp"
+		$MAIN_OS_MOUNT   = "C:\PreparingPendrive\temp\MainOSMount"
+		$WINRE_MOUNT     = "C:\PreparingPendrive\temp\WinREMount"
+		$WINPE_MOUNT     = "C:\PreparingPendrive\temp\WinPEMount"
+		Test-Path -Path $MEDIA_OLD_PATH
+		Test-Path -Path $MEDIA_NEW_PATH
+		Test-Path -Path $WORKING_PATH
+		Test-Path -Path $MAIN_OS_MOUNT
+		Test-Path -Path $WINRE_MOUNT
+		Test-Path -Path $WINPE_MOUNT
 
-	Test-Path -Path $MEDIA_OLD_PATH
-	Test-Path -Path $MEDIA_NEW_PATH
-	Test-Path -Path $WORKING_PATH
-	Test-Path -Path $MAIN_OS_MOUNT
-	Test-Path -Path $WINRE_MOUNT
-	Test-Path -Path $WINPE_MOUNT
+	# pobranie najnowszego .iso ze strony Microsoftu (https://www.microsoft.com/pl-pl/software-download/windows11)
+	# zamontowanie obrazu .iso i ręczne skopiowanie plików do C:\PreparingPendrive\oldMedia	
+	
+	# wyszukanie i pobranie najnowszych paczek do zaktualizowania obrazu z catalog update microsoftu (https://catalog.update.microsoft.com/Home.aspx)
+	# wrzucenie pobranych paczek do folderu C:\PreparingPendrive\packages i odpowiednich podfolderów 
+
+	# zdefiniowanie ścieżek do paczek (w związku z tym zmiana nazwy pobranych paczek, aby się zgadzały z poniższymi ścieżkami)
+		$LCU_PREREQUSITE_PATH = "C:\PreparingPendrive\packages\CU\LCUwindows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu" 		# PREREQUISITE - LCU
+		$LCU_PATH = "C:\PreparingPendrive\packages\CU\LCUwindows11.0-kb5066835-x64_2f193bc50987a9c27e42eceeb90648af19cc813a.msu" 		# od install.wim (Windows) - paczka Cumulative Update 
+		$SETUP_PREREQUSITE_PATH 		# PREREQUISITE - SETUP
+		$SETUP_DU_PATH = "C:\PreparingPendrive\packages\Others\SETUPwindows11.0-kb5066683-x64_71fecafb5ffa2f4d377657e7bc68e5aea98ecfd4.cab" 		# od boot.wim (WinPE) - paczka Setup
+		$SAFEOS_PREREQUSITE_PATH		# PREREQUISITE - SAFEOS
+		$SAFEOS_DU_PATH = "C:\PreparingPendrive\packages\Others\SAFEOSwindows11.0-kb5067039-x64_3c531cee9b3135b1f4990156b456873864c08e05.cab" 		# od winre.wim (WinRE) - paczka SafeOS
+		$DOTNET_PREREQUSITE_PATH 		# PREREQUISITE - DOTNET
+		$DOTNET_CU_PATH = "C:\PreparingPendrive\packages\Others\DOTNETwindows11.0-kb5066128-x64-ndp481_e2239075b7e05662cbbe1b4acfe9e57e40a2b9c0.msu" 		# od .NET - paczka .Net
+		Test-Path -Path $LCU_PATH
+		Test-Path -Path $LCU_PREREQUSITE_PATH
+		Test-Path -Path $SETUP_DU_PATH
+		Test-Path -Path $SETUP_PREREQUSITE_PATH
+		Test-Path -Path $SAFEOS_DU_PATH
+		Test-Path -Path $SAFEOS_PREREQUSITE_PATH
+		Test-Path -Path $DOTNET_CU_PATH
+		Test-Path -Path $DOTNET_PREREQUSITE_PATH
+
+
+	
 	
 		
 # ============================= OD TEGO MOMENTU SKRYPT JEST AUTOMATYCZNY, SKOPIUJ WSZYSTKIE KOMENDY DO POWERSHELLA I ZACZEKAJ ===================
-# z wyjątkiem możliwości sprawdzenia wersji paczki winre.wim
+# z wyjątkiem możliwości sprawdzenia wersji paczki winre.wim (nieistotne dopóki nie ma ona prerequsites)
 
 
 
@@ -78,16 +88,15 @@
 
 # update WinRE - winre.wim
 
-	# teraz można sprawdzić wersję aktualnie zainstalowanej paczki winre.wim	
-	#Invoke-Expression 'DISM /Get-WimInfo /WimFile:X:\Recovery\WindowsRE\WinRE.wim' # ta ścieżka jest chyba zła
-
 	Invoke-Expression 'DISM /Get-WimInfo /WimFile:$MAIN_OS_MOUNT\windows\system32\recovery\winre.wim'
 	Copy-Item -Path $MAIN_OS_MOUNT"\windows\system32\recovery\winre.wim" -Destination $WORKING_PATH"\winre.wim" -Force -ErrorAction stop 
 
 	Mount-WindowsImage -ImagePath $WORKING_PATH"\winre.wim" -Index 1 -Path $WINRE_MOUNT -ErrorAction stop 
 
+	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $LCU_PREREQUSITE_PATH -ErrorAction stop 
 	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $LCU_PATH -ErrorAction stop 
-	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $SAFE_OS_DU_PATH -ErrorAction stop 
+
+	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $SAFEOS_DU_PATH -ErrorAction stop 
 
 	$LASTEXITCODE = 1
 	Invoke-Expression 'DISM /image:$WINRE_MOUNT /cleanup-image /StartComponentCleanup /ResetBase'
@@ -109,6 +118,7 @@
 
 # update MainOS - install.wim
 
+	Add-WindowsPackage -Path $MAIN_OS_MOUNT -PackagePath $LCU_PREREQUSITE_PATH -ErrorAction stop 
 	Add-WindowsPackage -Path $MAIN_OS_MOUNT -PackagePath $LCU_PATH -ErrorAction stop 
 
 	# tu ewentualne dodawanie lub usuwanie paczek i innych capabilities
@@ -141,6 +151,7 @@
 	
   Mount-WindowsImage -ImagePath $MEDIA_NEW_PATH"\sources\boot.wim" -Index 1 -Path $WINPE_MOUNT -ErrorAction stop 
 
+  Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PREREQUSITE_PATH
   Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PATH 
 	# Error 0x8007007e is a known issue with combined cumulative update, we can ignore.
 	
@@ -157,6 +168,7 @@
 
   Mount-WindowsImage -ImagePath $MEDIA_NEW_PATH"\sources\boot.wim" -Index 2 -Path $WINPE_MOUNT -ErrorAction stop 
 	
+	Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PREREQUSITE_PATH 
 	Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PATH 
 	# Error 0x8007007e is a known issue with combined cumulative update, we can ignore.
 	
