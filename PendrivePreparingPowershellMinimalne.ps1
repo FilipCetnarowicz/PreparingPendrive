@@ -36,20 +36,20 @@
 	
 	# wyszukanie i pobranie najnowszych paczek (wraz z ewentualnymi paczkami prerequisities) do zaktualizowania obrazu z catalog update microsoftu (https://catalog.update.microsoft.com/Home.aspx)
 	# wrzucenie pobranych paczek do folderu C:\PreparingPendrive\packages i odpowiednich podfolderów 
-		# istnienie prerequsities można sprawdzić wpisująć w przeglądarkę KBxxxxxxx i wchodząc na stronę supportu. Na dole strony znajduje się zakładka prerequisities. 
+		# istnienie prerequsities można sprawdzić wpisująć w przeglądarkę KBxxxxxxx i wchodząc na stronę support.microsoft.com. Na dole strony znajduje się zakładka prerequisities. 
 		# Sam catalog.update.microsoft.com po kliknięciu "pobierz" na najnowszej paczce daje od razu instalki do pobrania wszystkich prerequisities
 
-	# zdefiniowanie ścieżek do paczek (w związku z tym zmiana nazwy pobranych paczek, aby się zgadzały z poniższymi ścieżkami)
-		$LCU_PREREQUSITE_PATH = "C:\PreparingPendrive\packages\CU\LCUwindows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu" 		# PREREQUISITE - LCU
+	# zdefiniowanie ścieżek do paczek (w związku z tym zmiana nazwy ścieżek, aby się zgadzały z nowymi nazwami plików zawierającymi oznaczenie wersji)
+		$LCU_PREREQUISITE_PATH = "C:\PreparingPendrive\packages\CU\LCUwindows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu" 		# PREREQUISITE - LCU
 		$LCU_PATH = "C:\PreparingPendrive\packages\CU\LCUwindows11.0-kb5066835-x64_2f193bc50987a9c27e42eceeb90648af19cc813a.msu" 		# od install.wim (Windows) - paczka Cumulative Update 
-		$SETUP_PREREQUSITE_PATH 		# PREREQUISITE - SETUP
+		# $SETUP_PREREQUSITE_PATH 		# PREREQUISITE - SETUP
 		$SETUP_DU_PATH = "C:\PreparingPendrive\packages\Others\SETUPwindows11.0-kb5066683-x64_71fecafb5ffa2f4d377657e7bc68e5aea98ecfd4.cab" 		# od boot.wim (WinPE) - paczka Setup
-		$SAFEOS_PREREQUSITE_PATH		# PREREQUISITE - SAFEOS
+		# $SAFEOS_PREREQUSITE_PATH		# PREREQUISITE - SAFEOS
 		$SAFEOS_DU_PATH = "C:\PreparingPendrive\packages\Others\SAFEOSwindows11.0-kb5067039-x64_3c531cee9b3135b1f4990156b456873864c08e05.cab" 		# od winre.wim (WinRE) - paczka SafeOS
-		$DOTNET_PREREQUSITE_PATH 		# PREREQUISITE - DOTNET
+		# $DOTNET_PREREQUSITE_PATH 		# PREREQUISITE - DOTNET
 		$DOTNET_CU_PATH = "C:\PreparingPendrive\packages\Others\DOTNETwindows11.0-kb5066128-x64-ndp481_e2239075b7e05662cbbe1b4acfe9e57e40a2b9c0.msu" 		# od .NET - paczka .Net
 		Test-Path -Path $LCU_PATH
-		Test-Path -Path $LCU_PREREQUSITE_PATH
+		Test-Path -Path $LCU_PREREQUISITE_PATH
 		Test-Path -Path $SETUP_DU_PATH
 		Test-Path -Path $SETUP_PREREQUSITE_PATH
 		Test-Path -Path $SAFEOS_DU_PATH
@@ -95,7 +95,7 @@
 
 	Mount-WindowsImage -ImagePath $WORKING_PATH"\winre.wim" -Index 1 -Path $WINRE_MOUNT -ErrorAction stop 
 
-	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $LCU_PREREQUSITE_PATH -ErrorAction stop 
+	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $LCU_PREREQUISITE_PATH -ErrorAction stop 
 	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $LCU_PATH -ErrorAction stop 
 
 	Add-WindowsPackage -Path $WINRE_MOUNT -PackagePath $SAFEOS_DU_PATH -ErrorAction stop 
@@ -104,7 +104,7 @@
 	Invoke-Expression 'DISM /image:$WINRE_MOUNT /cleanup-image /StartComponentCleanup /ResetBase'
 	if ($LASTEXITCODE -ne 0) { throw "Error. Exit code: $LASTEXITCODE" } 
 
-	Dismount-WindowsImage -Path $WINRE_MOUNT  -Save -ErrorAction stop 
+	Dismount-WindowsImage -Path $WINRE_MOUNT -Save -ErrorAction stop 
 
 
 
@@ -120,7 +120,7 @@
 
 # update MainOS - install.wim
 
-	Add-WindowsPackage -Path $MAIN_OS_MOUNT -PackagePath $LCU_PREREQUSITE_PATH -ErrorAction stop 
+	Add-WindowsPackage -Path $MAIN_OS_MOUNT -PackagePath $LCU_PREREQUISITE_PATH -ErrorAction stop 
 	Add-WindowsPackage -Path $MAIN_OS_MOUNT -PackagePath $LCU_PATH -ErrorAction stop 
 
 	# tu ewentualne dodawanie lub usuwanie paczek i innych capabilities
@@ -153,7 +153,7 @@
 	
   Mount-WindowsImage -ImagePath $MEDIA_NEW_PATH"\sources\boot.wim" -Index 1 -Path $WINPE_MOUNT -ErrorAction stop 
 
-  Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PREREQUSITE_PATH
+  Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PREREQUISITE_PATH
   Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PATH 
 	# Error 0x8007007e is a known issue with combined cumulative update, we can ignore.
 	
@@ -170,7 +170,7 @@
 
   Mount-WindowsImage -ImagePath $MEDIA_NEW_PATH"\sources\boot.wim" -Index 2 -Path $WINPE_MOUNT -ErrorAction stop 
 	
-	Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PREREQUSITE_PATH 
+	Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PREREQUISITE_PATH 
 	Add-WindowsPackage -Path $WINPE_MOUNT -PackagePath $LCU_PATH 
 	# Error 0x8007007e is a known issue with combined cumulative update, we can ignore.
 	
