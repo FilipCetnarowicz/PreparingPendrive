@@ -13,6 +13,7 @@
 		mkdir "C:\PreparingPendrive\oldMedia"
 		mkdir "C:\PreparingPendrive\newMedia"
 		mkdir "C:\PreparingPendrive\temp"
+		mkdir "C:\PreparingPendrive\packages"
 		mkdir "C:\PreparingPendrive\temp\MainOSMount"
 		mkdir "C:\PreparingPendrive\temp\WinREMount"
 		mkdir "C:\PreparingPendrive\temp\WinPEMount"
@@ -31,11 +32,12 @@
 		Test-Path -Path $WINRE_MOUNT
 		Test-Path -Path $WINPE_MOUNT
 
-	# pobranie najnowszego .iso ze strony Microsoftu (https://www.microsoft.com/pl-pl/software-download/windows11)
-	# zamontowanie obrazu .iso i ręczne skopiowanie plików do C:\PreparingPendrive\oldMedia	
+	# zgranie na "C:\PreparingPendrive\oldMedia" ulepszoną wersję (z install.esd ! ) najnowszego .iso ze strony Microsoftu (https://www.microsoft.com/pl-pl/software-download/windows11)
 	
-	# wyszukanie i pobranie najnowszych paczek do zaktualizowania obrazu z catalog update microsoftu (https://catalog.update.microsoft.com/Home.aspx)
+	# wyszukanie i pobranie najnowszych paczek (wraz z ewentualnymi paczkami prerequisities) do zaktualizowania obrazu z catalog update microsoftu (https://catalog.update.microsoft.com/Home.aspx)
 	# wrzucenie pobranych paczek do folderu C:\PreparingPendrive\packages i odpowiednich podfolderów 
+		# istnienie prerequsities można sprawdzić wpisująć w przeglądarkę KBxxxxxxx i wchodząc na stronę supportu. Na dole strony znajduje się zakładka prerequisities. 
+		# Sam catalog.update.microsoft.com po kliknięciu "pobierz" na najnowszej paczce daje od razu instalki do pobrania wszystkich prerequisities
 
 	# zdefiniowanie ścieżek do paczek (w związku z tym zmiana nazwy pobranych paczek, aby się zgadzały z poniższymi ścieżkami)
 		$LCU_PREREQUSITE_PATH = "C:\PreparingPendrive\packages\CU\LCUwindows11.0-kb5043080-x64_953449672073f8fb99badb4cc6d5d7849b9c83e8.msu" 		# PREREQUISITE - LCU
